@@ -1,5 +1,18 @@
+locals {
+  provider_json = {
+  "data": {
+    "type": "registry-providers",
+    "attributes": {
+      "name": var.provider_name,
+      "namespace": var.organization_name,
+      "registry-name": "private"
+    }
+  }
+}
+}
+
 resource "terraform_data" "private_provider" {
   provisioner "local-exec" {
-    command = "curl --header \"Authorization\": Bearer ${var.tfe_token}\" --header \"Content-Type: application/vnd.api+json\" --request POST --data @${var.provider_json} https://app.terraform.io/api/v2/organizations/${var.organization_name}/registry-providers"
+    command = "curl --header \"Authorization\": Bearer ${var.tfe_token}\" --header \"Content-Type: application/vnd.api+json\" --request POST --data @${local.provider_json} https://app.terraform.io/api/v2/organizations/${var.organization_name}/registry-providers"
   }
 }
