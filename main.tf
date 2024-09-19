@@ -1,21 +1,16 @@
-resource "local_file" "private_provider" {
-    filename = "${path.module}/provider.json"
-    content = <<EOF
-{
-  "data": {
-    "type": "registry-providers",
-    "attributes": {
-      "name": "${var.provider_name}",
-      "namespace": "${var.organization_name}",
-      "registry-name": "private"
-    }
-  }
-}
-EOF
+
+module "provider" {
+  source = "./provider"
+
+  tfe_token = var.tfe_token
+  organization_name = var.organization_name
+  provider_name = var.provider_name
+  provider_version = var.provider_version
 }
 
-resource "terraform_data" "private_provider" {
-  provisioner "local-exec" {
-    command = "curl --header \"Authorization: Bearer ${var.tfe_token}\" --header \"Content-Type: application/vnd.api+json\" --request POST --data @${path.module}/provider.json https://app.terraform.io/api/v2/organizations/${var.organization_name}/registry-providers"
-  }
-}
+# module "cleanup" {
+#   depends_on = [ module.provider ]
+#   source = "./cleanup"
+
+
+# }
