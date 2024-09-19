@@ -1,3 +1,10 @@
+locals {
+  # Extracting the URL for registering the SHA256 value.
+  version_output = jsondecode(terraform_data.version.output)
+  shasums_upload_url = local.version_output.data.links["shasums-upload"]
+  shasums_sig_upload_url = local.version_output.data.links["shasums-sig-upload"]
+}
+
 resource "local_file" "provider_json" {
     filename = "${path.module}/provider.json"
     content = <<EOF
@@ -30,6 +37,20 @@ resource "local_file" "version_json" {
 EOF
 }
 
+resource "local_file" "sha256list_json" {
+  filename = "${path.module}/provider_sha256"
+  content = <<EOF
+${var.provider_sha256_value}
+EOF
+}
+
+resource "local_file" "sha256sig_json" {
+  filename = "${path.module}/provider_sha256.sig"
+  content = <<EOF
+${var.provider_sha256_sig_value}
+EOF
+}
+
 resource "local_file" "file_json" {
   filename = "${path.module}/file.json"
   content = <<EOF
@@ -47,13 +68,26 @@ resource "local_file" "file_json" {
 EOF
 }
 
+resource "terraform_data" "provider" {
 
-resource "terraform_data" "private_provider" {
   provisioner "local-exec" {
     command = "curl --header \"Authorization: Bearer ${var.tfe_token}\" --header \"Content-Type: application/vnd.api+json\" --request POST --data @${path.module}/provider.json https://app.terraform.io/api/v2/organizations/${var.organization_name}/registry-providers"
   }
+}
 
-  provisioner "local-exec" {
+resource "terraform_data" "version" {
+
+ provisioner "local-exec" {
     command = "curl --header \"Authorization: Bearer ${var.tfe_token}\" --header \"Content-Type: application/vnd.api+json\" --request POST --data @${path.module}/version.json https://app.terraform.io/api/v2/organizations/${var.organization_name}/registry-providers/private/${var.organization_name}/${var.provider_name}/versions"
+  }
+}
+
+resource "terraform_data" "sha256" {
+  
+  provisioner "local-exec" {
+    command = "curl -T ${path.module}/provider_sha256 ${local.shasums_upload_url}"
+  }
+  provisioner "local-exec" {
+    command = "curl -T ${path.module}/provider_sha256.sig ${local.shasums_sig_upload_url}"
   }
 }
