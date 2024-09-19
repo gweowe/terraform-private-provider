@@ -1,5 +1,6 @@
 locals {
-  provider_json = {
+  provider_json = <<EOF
+{
   "data": {
     "type": "registry-providers",
     "attributes": {
@@ -9,6 +10,7 @@ locals {
     }
   }
 }
+EOF
 }
 
 resource "terraform_data" "private_provider" {
