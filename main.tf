@@ -4,8 +4,8 @@ locals {
   "data": {
     "type": "registry-providers",
     "attributes": {
-      "name": var.provider_name,
-      "namespace": var.organization_name,
+      "name": "${var.provider_name}",
+      "namespace": "${var.organization_name}",
       "registry-name": "private"
     }
   }
