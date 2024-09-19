@@ -1,9 +1,9 @@
-# locals {
-#   # Extracting the URL for registering the SHA256 value.
-#   version_output = jsondecode(terraform_data.version.output)
-#   shasums_upload_url = local.version_output.data.links["shasums-upload"]
-#   shasums_sig_upload_url = local.version_output.data.links["shasums-sig-upload"]
-# }
+locals {
+  # Extracting the URL for registering the SHA256 value.
+  version_output = jsondecode(data.http.version.response_body)
+  shasums_upload_url = local.version_output.data.links["shasums-upload"]
+  shasums_sig_upload_url = local.version_output.data.links["shasums-sig-upload"]
+}
 
 resource "local_file" "provider_json" {
     filename = "${path.module}/provider.json"
@@ -80,13 +80,18 @@ data "http" "provider" {
   }
 }
 
+data "http" "version" {
+  url    = "https://app.terraform.io/api/v2/organizations/${var.organization_name}/registry-providers/private/${var.organization_name}/${var.provider_name}/versions"
+  method = "POST"
 
-# resource "terraform_data" "version" {
-  
-#  provisioner "local-exec" {
-#     command = "curl --header \"Authorization: Bearer ${var.tfe_token}\" --header \"Content-Type: application/vnd.api+json\" --request POST --data @${path.module}/version.json https://app.terraform.io/api/v2/organizations/${var.organization_name}/registry-providers/private/${var.organization_name}/${var.provider_name}/versions"
-#   }
-# }
+  request_body = local_file.version_json.content
+
+  request_headers = {
+    Authorization = "Bearer ${var.tfe_token}"
+    Content-Type  = "application/vnd.api+json"
+  }
+}
+
 
 # resource "terraform_data" "sha256" {
   
