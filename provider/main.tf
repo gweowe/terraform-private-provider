@@ -72,7 +72,7 @@ data "http" "provider" {
   url    = "https://app.terraform.io/api/v2/organizations/${var.organization_name}/registry-providers"
   method = "POST"
 
-  request_body = file("${path.module}/provider.json")
+  request_body = local_file.provider_json.content
 
   request_headers = {
     Authorization = "Bearer ${var.tfe_token}"
