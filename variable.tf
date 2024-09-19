@@ -1,5 +1,4 @@
 variable "tfe_token" {
-  sensitive = true
 }
 
 variable "organization_name" {
