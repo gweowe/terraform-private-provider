@@ -37,7 +37,7 @@ resource "local_file" "version_json" {
 EOF
 }
 
-resource "local_file" "sha256list_json" {
+resource "local_file" "sha256_json" {
   filename = "${path.module}/provider_sha256"
   content = <<EOF
 ${var.provider_sha256_value}
@@ -84,7 +84,7 @@ data "http" "version" {
   url    = "https://app.terraform.io/api/v2/organizations/${var.organization_name}/registry-providers/private/${var.organization_name}/${var.provider_name}/versions"
   method = "POST"
 
-  request_body = local_file.version_json.content
+  request_body = local_file.sha256_json
 
   request_headers = {
     Authorization = "Bearer ${var.tfe_token}"
@@ -92,13 +92,16 @@ data "http" "version" {
   }
 }
 
+data "http" "sha256" {
+  url    = local.shasums_upload_url
+  method = "POST"
 
-# resource "terraform_data" "sha256" {
-  
-#   provisioner "local-exec" {
-#     command = "curl -T ${path.module}/provider_sha256 ${local.shasums_upload_url}"
-#   }
-#   provisioner "local-exec" {
-#     command = "curl -T ${path.module}/provider_sha256.sig ${local.shasums_sig_upload_url}"
-#   }
-# }
+  request_body = local_file.sha256sig_json
+}
+
+data "http" "sha256_sig" {
+  url    = local.shasums_sig_upload_url
+  method = "POST"
+
+  request_body = local_file.version_json.content
+}
