@@ -32,6 +32,19 @@ EOF
 
 resource "local_file" "file_json" {
   filename = "${path.module}/file.json"
+  content = <<EOF
+{
+  "data": {
+    "type": "registry-provider-version-platforms",
+    "attributes": {
+      "os": "linux",
+      "arch": "amd64",
+      "shasum": ${var.provider_binary_shasum},
+      "filename": ${var.provider_binary_name}
+    }
+  }
+}
+EOF
 }
 
 
